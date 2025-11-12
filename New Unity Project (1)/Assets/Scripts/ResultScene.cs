@@ -2,17 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-public class Buttons : MonoBehaviour
+public class ResultScene : MonoBehaviour
 {
-    
 
-    
+
+
 
 
 
     public void switchScene()
     {
-        SceneManager.LoadScene("GameScene",LoadSceneMode.Single);
+        SceneManager.LoadScene("ResultScene", LoadSceneMode.Single);
     }
 
 
