@@ -6,9 +6,7 @@ public class GameScene : MonoBehaviour
 {
     
 
-    
-
-
+  
 
     public void switchScene()
     {

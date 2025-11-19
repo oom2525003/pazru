@@ -6,10 +6,6 @@ public class ResultScene : MonoBehaviour
 {
 
 
-
-
-
-
     public void switchScene()
     {
         SceneManager.LoadScene("ResultScene", LoadSceneMode.Single);
