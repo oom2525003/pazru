@@ -1,23 +1,29 @@
 using UnityEngine;
+
 public class PlayerController : MonoBehaviour
 {
     // グリッドの設定
     private const int GRID_WIDTH = 6;
     private const int GRID_HEIGHT = 4;
+
     // マップのサイズと開始位置
     private const float MAP_SIZE = 2.0f;
     private const float START_X = -5.0f;
     private const float START_Y = 3.0f;
+
     // 現在のグリッド位置
     private int currentX = 0;
     private int currentY = 0;
+
     // マップの占有状態を管理する配列（true = 占有されている、false = 空いている）
     private bool[,] mapOccupied = new bool[GRID_WIDTH, GRID_HEIGHT];
+
     void Start()
     {
         // 初期位置の設定（左下を0,0とする）
         currentX = 0;
         currentY = 0;
+
         // すべてのマップを空いている状態で初期化
         for (int x = 0; x < GRID_WIDTH; x++)
         {
@@ -26,9 +32,11 @@ public class PlayerController : MonoBehaviour
                 mapOccupied[x, y] = false;
             }
         }
+
         // プレイヤーの初期位置を設定
         UpdatePlayerPosition();
     }
+
     void Update()
     {
         // W キー - 上に移動
@@ -52,29 +60,48 @@ public class PlayerController : MonoBehaviour
             TryMove(1, 0);
         }
     }
+
     // 指定方向への移動を試みる
     void TryMove(int deltaX, int deltaY)
     {
         int newX = currentX + deltaX;
         int newY = currentY + deltaY;
+
         // グリッドの範囲内かチェック
         if (newX < 0 || newX >= GRID_WIDTH || newY < 0 || newY >= GRID_HEIGHT)
         {
             Debug.Log("グリッドの範囲外です");
             return;
         }
+
         // 移動先のマップが空いているかチェック
         if (mapOccupied[newX, newY])
         {
             Debug.Log("マップが占有されています");
             return;
         }
+
+        // 移動先にMovingObjectがあるかチェック
+        Vector3 targetPosition = new Vector3(
+            START_X + newX * MAP_SIZE,
+            START_Y - newY * MAP_SIZE,
+            transform.position.z
+        );
+
+        if (IsMovingObjectAtPosition(targetPosition))
+        {
+            Debug.Log("MovingObjectがあるため移動できません");
+            return;
+        }
+
         // 移動を実行
         currentX = newX;
         currentY = newY;
         UpdatePlayerPosition();
+
         Debug.Log($"移動しました: ({currentX}, {currentY})");
     }
+
     // プレイヤーの実際の位置を更新（2D版）
     void UpdatePlayerPosition()
     {
@@ -85,8 +112,10 @@ public class PlayerController : MonoBehaviour
             START_Y - currentY * MAP_SIZE, // Yは上から下に減少
             transform.position.z  // Z座標は維持
         );
+
         transform.position = newPosition;
     }
+
     // マップの占有状態を設定するメソッド（外部から呼び出し可能）
     public void SetMapOccupied(int x, int y, bool occupied)
     {
@@ -95,6 +124,7 @@ public class PlayerController : MonoBehaviour
             mapOccupied[x, y] = occupied;
         }
     }
+
     // 特定のマップが空いているか確認するメソッド
     public bool IsMapEmpty(int x, int y)
     {
@@ -102,6 +132,24 @@ public class PlayerController : MonoBehaviour
         {
             return !mapOccupied[x, y];
         }
+        return false;
+    }
+
+    // 指定位置にMovingObjectがあるかチェック
+    bool IsMovingObjectAtPosition(Vector3 position)
+    {
+        // シーン内のすべてのMovingObjectを取得
+        MovingObject[] movingObjects = FindObjectsOfType<MovingObject>();
+
+        foreach (MovingObject obj in movingObjects)
+        {
+            // 位置が一致するかチェック（小数点の誤差を考慮）
+            if (Vector3.Distance(obj.transform.position, position) < 0.1f)
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 }
