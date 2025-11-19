@@ -2,110 +2,213 @@ using UnityEngine;
 
 // 動かす障害物
 
+
 public class MovingObject : MonoBehaviour
 {
-    // グリッドの設定
-    private const int GRID_WIDTH = 6;
-    private const int GRID_HEIGHT = 4;
-    // 
+    // マップのサイズ
     private const float MAP_SIZE = 2.0f;
+
+    // マップの範囲設定
     private const float START_X = -5.0f;
     private const float START_Y = 3.0f;
-    //
-    private int currentX = 0;
-    private int currentY = 0;
-    // 
-    private bool[,] mapOccupied = new bool[GRID_WIDTH, GRID_HEIGHT];
+    private const float END_X = 5.0f;
+    private const float END_Y = -3.0f;
+
+    // 選択されているかどうか
+    private bool isSelected = false;
+
+    // 既に移動したかどうか
+    private bool hasMoved = false;
+
+    // 選択時のエフェクト用（オプション）
+    private Color originalColor;
+    private SpriteRenderer spriteRenderer;
+
     void Start()
     {
-        // 初期位置の設定
-        currentX = 0;
-        currentY = 0;
-        // 全てのマップをあいてる状態で初期化
-        for (int x = 0; x < GRID_WIDTH; x++)
+        // SpriteRendererがあれば取得（色を変えて選択状態を表示するため）
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
         {
-            for (int y = 0; y < GRID_HEIGHT; y++)
+            originalColor = spriteRenderer.color;
+        }
+    }
+
+    void Update()
+    {
+        // 選択されている場合のみ十字キーで移動
+        if (isSelected && !hasMoved)
+        {
+            // 上キー
+            if (Input.GetKeyDown(KeyCode.UpArrow))
             {
-                mapOccupied[x, y] = false;
+                Move(0, MAP_SIZE);
+            }
+            // 下キー
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                Move(0, -MAP_SIZE);
+            }
+            // 左キー
+            else if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                Move(-MAP_SIZE, 0);
+            }
+            // 右キー
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                Move(MAP_SIZE, 0);
+            }
+        }
+    }
+
+    // オブジェクトをクリックしたときの処理
+    void OnMouseDown()
+    {
+        // 既に移動済みの場合は選択できない
+        if (hasMoved)
+        {
+            Debug.Log($"{gameObject.name}は既に移動済みです");
+            return;
+        }
+
+        // 他のすべてのMovingObjectの選択を解除
+        MovingObject[] allMovingObjects = FindObjectsOfType<MovingObject>();
+        foreach (MovingObject obj in allMovingObjects)
+        {
+            obj.Deselect();
+        }
+
+        // このオブジェクトを選択
+        Select();
+    }
+
+    // オブジェクトを選択状態にする
+    void Select()
+    {
+        isSelected = true;
+
+        // 選択状態を視覚的に表示（色を変える）
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = Color.yellow;
+        }
+
+        Debug.Log($"{gameObject.name}を選択しました");
+    }
+
+    // 選択を解除する
+    void Deselect()
+    {
+        isSelected = false;
+
+        // 元の色に戻す
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = originalColor;
+        }
+    }
+
+    // 指定方向に移動する
+    void Move(float deltaX, float deltaY)
+    {
+        Vector3 newPosition = transform.position + new Vector3(deltaX, deltaY, 0);
+
+        // マップの範囲外に出ないかチェック
+        if (newPosition.x < START_X || newPosition.x > END_X ||
+            newPosition.y > START_Y || newPosition.y < END_Y)
+        {
+            Debug.Log($"{gameObject.name}はマップの範囲外に移動できません");
+            return;
+        }
+
+        // 移動先にmapオブジェクトがあるかチェック
+        if (!IsMapAtPosition(newPosition))
+        {
+            Debug.Log($"{gameObject.name}は移動先にmapがないため移動できません");
+            return;
+        }
+
+        // 移動先にPlayerがいないかチェック
+        if (IsPlayerAtPosition(newPosition))
+        {
+            Debug.Log($"{gameObject.name}はPlayerがいるため移動できません");
+            return;
+        }
+
+        // 移動を実行
+        transform.position = newPosition;
+
+        hasMoved = true;
+        isSelected = false;
+
+        // 元の色に戻す
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = originalColor;
+        }
+
+        Debug.Log($"{gameObject.name}が移動しました: {newPosition}");
+    }
+
+    // 指定位置にmapオブジェクトがあるかチェック
+    bool IsMapAtPosition(Vector3 position)
+    {
+        // "map"という名前を含むすべてのオブジェクトを検索
+        GameObject[] allObjects = FindObjectsOfType<GameObject>();
+
+        foreach (GameObject obj in allObjects)
+        {
+            // オブジェクト名に"map"が含まれているかチェック（大文字小文字を区別しない）
+            if (obj.name.ToLower().Contains("map"))
+            {
+                // 位置が一致するかチェック（小数点の誤差を考慮）
+                if (Vector3.Distance(obj.transform.position, position) < 0.1f)
+                {
+                    return true;
+                }
             }
         }
 
-        UpdateObjectPosition();
-    }
-    void Update()
-    {
-        // 
-        if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            TryMove(0, -1);
-        }
-        // 
-        else if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            TryMove(0, 1);
-        }
-        // 
-        else if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            TryMove(-1, 0);
-        }
-        // 
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            TryMove(1, 0);
-        }
-    }
-    // 
-    void TryMove(int deltaX, int deltaY)
-    {
-        int newX = currentX + deltaX;
-        int newY = currentY + deltaY;
-        // 
-        if (newX < 0 || newX >= GRID_WIDTH || newY < 0 || newY >= GRID_HEIGHT)
-        {
-            Debug.Log("aaaa");
-            return;
-        }
-        // 
-        if (mapOccupied[newX, newY])
-        {
-            Debug.Log("aaaaa");
-            return;
-        }
-        //
-        currentX = newX;
-        currentY = newY;
-        UpdateObjectPosition();
-        Debug.Log("aaaaa: ({currentX}, {currentY})");
-    }
-    // 
-    void UpdateObjectPosition()
-    {
-        // 
-        // 
-        Vector3 newPosition = new Vector3(
-            START_X + currentX * MAP_SIZE,
-            START_Y - currentY * MAP_SIZE, //
-            transform.position.z  // 
-        );
-        transform.position = newPosition;
-    }
-    // 
-    public void SetMapOccupied(int x, int y, bool occupied)
-    {
-        if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
-        {
-            mapOccupied[x, y] = occupied;
-        }
-    }
-    //
-    public bool IsMapEmpty(int x, int y)
-    {
-        if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
-        {
-            return !mapOccupied[x, y];
-        }
         return false;
     }
-}
 
+    // 指定位置にPlayerがいるかチェック
+    bool IsPlayerAtPosition(Vector3 position)
+    {
+        // Playerタグを持つオブジェクトを検索
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+
+        if (player != null)
+        {
+            // 位置が一致するかチェック（小数点の誤差を考慮）
+            if (Vector3.Distance(player.transform.position, position) < 0.1f)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // 移動状態をリセットするメソッド（外部から呼び出し可能）
+    public void ResetMovement()
+    {
+        hasMoved = false;
+        isSelected = false;
+
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = originalColor;
+        }
+
+        Debug.Log($"{gameObject.name}の移動状態をリセットしました");
+    }
+
+    // 移動済みかどうかを確認するメソッド
+    public bool HasMoved()
+    {
+        return hasMoved;
+    }
+
+}
