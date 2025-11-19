@@ -29,12 +29,26 @@ public class MovingObject : MonoBehaviour
         {
             originalColor = spriteRenderer.color;
         }
+
+        // Collider2Dの確認とZ座標の調整
+        Collider2D collider = GetComponent<Collider2D>();
+        if (collider == null)
+        {
+            Debug.LogWarning($"{gameObject.name}にCollider2Dがありません！BoxCollider2Dを追加してください。");
+        }
+
+        // Z座標を手前に調整（クリック判定を優先）
+        Vector3 pos = transform.position;
+        if (pos.z >= 0)
+        {
+            transform.position = new Vector3(pos.x, pos.y, -1);
+        }
     }
 
     void Update()
     {
         // 選択されている場合のみ十字キーで移動
-        if (isSelected && !hasMoved)
+        if (isSelected)
         {
             // 上キー
             if (Input.GetKeyDown(KeyCode.UpArrow))
@@ -62,12 +76,7 @@ public class MovingObject : MonoBehaviour
     // オブジェクトをクリックしたときの処理
     void OnMouseDown()
     {
-        // 既に移動済みの場合は選択できない
-        if (hasMoved)
-        {
-            Debug.Log($"{gameObject.name}は既に移動済みです");
-            return;
-        }
+        Debug.Log($"{gameObject.name}がクリックされました");
 
         // 他のすべてのMovingObjectの選択を解除
         MovingObject[] allMovingObjects = FindObjectsOfType<MovingObject>();
@@ -133,6 +142,13 @@ public class MovingObject : MonoBehaviour
             return;
         }
 
+        // 移動先に他のMovingObjectがいないかチェック
+        if (IsOtherMovingObjectAtPosition(newPosition))
+        {
+            Debug.Log($"{gameObject.name}は他のMovingObjectがいるため移動できません");
+            return;
+        }
+
         // 移動を実行
         transform.position = newPosition;
 
@@ -154,19 +170,26 @@ public class MovingObject : MonoBehaviour
         // "map"という名前を含むすべてのオブジェクトを検索
         GameObject[] allObjects = FindObjectsOfType<GameObject>();
 
+        int mapCount = 0;
+
         foreach (GameObject obj in allObjects)
         {
             // オブジェクト名に"map"が含まれているかチェック（大文字小文字を区別しない）
             if (obj.name.ToLower().Contains("map"))
             {
+                mapCount++;
+
                 // 位置が一致するかチェック（小数点の誤差を考慮）
-                if (Vector3.Distance(obj.transform.position, position) < 0.1f)
+                float distance = Vector3.Distance(obj.transform.position, position);
+
+                if (distance < 1.5f)
                 {
+                    Debug.Log($"->{obj.name}が移動先にあります");
                     return true;
                 }
             }
         }
-
+        Debug.Log($"map総数:{mapCount}個検出、移動先にmapなし");
         return false;
     }
 
@@ -179,10 +202,17 @@ public class MovingObject : MonoBehaviour
         if (player != null)
         {
             // 位置が一致するかチェック（小数点の誤差を考慮）
-            if (Vector3.Distance(player.transform.position, position) < 0.1f)
+            float distance = Vector3.Distance(player.transform.position, position);
+            Debug.Log($"Player距離チェック: {distance} (位置: Player={player.transform.position}, 移動先={position})");
+
+            if (distance < 1.0f) // 判定距離を1.0fに拡大
             {
                 return true;
             }
+        }
+        else
+        {
+            Debug.LogWarning("Playerタグを持つオブジェクトが見つかりません！Playerオブジェクトに'Player'タグを設定してください。");
         }
 
         return false;
@@ -206,5 +236,31 @@ public class MovingObject : MonoBehaviour
     public bool HasMoved()
     {
         return hasMoved;
+    }
+
+    // 指定位置に他のMovingObjectがいるかチェック
+    bool IsOtherMovingObjectAtPosition(Vector3 position)
+    {
+        // シーン内のすべてのMovingObjectを取得
+        MovingObject[] movingObjects = FindObjectsOfType<MovingObject>();
+
+        foreach (MovingObject obj in movingObjects)
+        {
+            // 自分自身は除外
+            if (obj == this)
+            {
+                continue;
+            }
+
+            // 位置が一致するかチェック（小数点の誤差を考慮）
+            float distance = Vector3.Distance(obj.transform.position, position);
+
+            if (distance < 1.0f) // 判定距離を1.0fに設定
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
