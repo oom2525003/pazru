@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        // 初期位置の設定（左下を0,0とする）
+        // 初期位置の設定（左上を0,0とする）
         currentX = 0;
         currentY = 0;
 
@@ -35,6 +35,8 @@ public class PlayerController : MonoBehaviour
 
         // プレイヤーの初期位置を設定
         UpdatePlayerPosition();
+
+        Debug.Log($"Player初期化: グリッド({currentX}, {currentY}), ワールド座標{transform.position}");
     }
 
     void Update()
@@ -42,7 +44,7 @@ public class PlayerController : MonoBehaviour
         // W キー - 上に移動
         if (Input.GetKeyDown(KeyCode.W))
         {
-            TryMove(0, -1);
+            TryMove(0, -1); // Yは上に行くほど減少
         }
         // S キー - 下に移動
         else if (Input.GetKeyDown(KeyCode.S))
@@ -70,27 +72,28 @@ public class PlayerController : MonoBehaviour
         // グリッドの範囲内かチェック
         if (newX < 0 || newX >= GRID_WIDTH || newY < 0 || newY >= GRID_HEIGHT)
         {
-            Debug.Log("グリッドの範囲外です");
+            Debug.Log("Playerはグリッドの範囲外に移動できません");
             return;
         }
 
-        // 移動先のマップが空いているかチェック
-        if (mapOccupied[newX, newY])
-        {
-            Debug.Log("マップが占有されています");
-            return;
-        }
-
-        // 移動先にMovingObjectがあるかチェック
+        // 移動先の座標を計算
         Vector3 targetPosition = new Vector3(
             START_X + newX * MAP_SIZE,
             START_Y - newY * MAP_SIZE,
             transform.position.z
         );
 
+        // 移動先のマップが空いているかチェック
+        if (mapOccupied[newX, newY])
+        {
+            Debug.Log("Playerはマップが占有されているため移動できません");
+            return;
+        }
+
+        // 移動先にMovingObjectがあるかチェック
         if (IsMovingObjectAtPosition(targetPosition))
         {
-            Debug.Log("MovingObjectがあるため移動できません");
+            Debug.Log("PlayerはMovingObjectがあるため移動できません");
             return;
         }
 
@@ -99,21 +102,38 @@ public class PlayerController : MonoBehaviour
         currentY = newY;
         UpdatePlayerPosition();
 
-        Debug.Log($"移動しました: ({currentX}, {currentY})");
+        Debug.Log($"Playerが移動しました: グリッド({currentX}, {currentY})");
     }
 
-    // プレイヤーの実際の位置を更新（2D版）
+    // プレイヤーの実際の位置を更新
     void UpdatePlayerPosition()
     {
-        // グリッド位置から実際のワールド座標を計算
-        // 左上が(0,0)、右下が(5,3)のグリッド
         Vector3 newPosition = new Vector3(
             START_X + currentX * MAP_SIZE,
-            START_Y - currentY * MAP_SIZE, // Yは上から下に減少
-            transform.position.z  // Z座標は維持
+            START_Y - currentY * MAP_SIZE,
+            transform.position.z
         );
 
         transform.position = newPosition;
+    }
+
+    // 指定位置にMovingObjectがあるかチェック
+    bool IsMovingObjectAtPosition(Vector3 position)
+    {
+        MovingObject[] movingObjects = FindObjectsOfType<MovingObject>();
+
+        foreach (MovingObject obj in movingObjects)
+        {
+            float distance = Vector3.Distance(obj.transform.position, position);
+
+            if (distance < MAP_SIZE )
+            {
+                Debug.Log($"移動先にMovingObject '{obj.name}' がいます (距離: {distance:F2})");
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // マップの占有状態を設定するメソッド（外部から呼び出し可能）
@@ -122,6 +142,7 @@ public class PlayerController : MonoBehaviour
         if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
         {
             mapOccupied[x, y] = occupied;
+            Debug.Log($"マップ({x}, {y})の占有状態を{occupied}に設定");
         }
     }
 
@@ -135,21 +156,9 @@ public class PlayerController : MonoBehaviour
         return false;
     }
 
-    // 指定位置にMovingObjectがあるかチェック
-    bool IsMovingObjectAtPosition(Vector3 position)
+    // 現在のグリッド位置を取得
+    public Vector2Int GetCurrentGridPosition()
     {
-        // シーン内のすべてのMovingObjectを取得
-        MovingObject[] movingObjects = FindObjectsOfType<MovingObject>();
-
-        foreach (MovingObject obj in movingObjects)
-        {
-            // 位置が一致するかチェック（小数点の誤差を考慮）
-            if (Vector3.Distance(obj.transform.position, position) < 0.1f)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return new Vector2Int(currentX, currentY);
     }
 }
