@@ -1,5 +1,8 @@
 using UnityEngine;
 
+// 動かす障害物
+
+
 public class MovingObject : MonoBehaviour
 {
     // マップのサイズ
@@ -261,6 +264,6 @@ public class MovingObject : MonoBehaviour
             }
         }
 
-        return false;
+            return false;
     }
 }
