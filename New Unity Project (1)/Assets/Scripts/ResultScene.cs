@@ -11,6 +11,5 @@ public class ResultScene : MonoBehaviour
         SceneManager.LoadScene("ResultScene", LoadSceneMode.Single);
     }
 
-
 }
 
