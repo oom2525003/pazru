@@ -17,23 +17,9 @@ public class Goal : MonoBehaviour
         if (collision.gameObject.tag == "Player")
         {
             Debug.Log("ゴール");
-
-            // コルーチンで停止
-            StartCoroutine(Restart());
+            // クリア画面に移動
+            SceneManager.LoadScene("ClearScene");
         }
-    }
-
-    public IEnumerator Restart()
-    {
-        // ○秒停止する
-        Time.timeScale = 0;
-        yield return new WaitForSecondsRealtime(3.0f);
-
-        // 再開する
-        Time.timeScale = 1;
-
-        // クリア画面に移動
-        SceneManager.LoadScene("ClearScene");
     }
 }
 
