@@ -167,6 +167,12 @@ public class MovingObject : MonoBehaviour
             return;
         }
 
+        if (IsGoalAtPosition(newPosition))
+        {
+            Debug.Log($"{gameObject.name}はGoalがいるため移動できません");
+            return;
+        }
+
         // 4. 移動先に他のMovingObjectがいないかチェック
         if (IsOtherMovingObjectAtPosition(newPosition))
         {
@@ -260,6 +266,28 @@ public class MovingObject : MonoBehaviour
                 Debug.Log($"→ MovingObject '{obj.name}' が移動先にいます (距離: {distance:F2})");
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    bool IsGoalAtPosition(Vector3 position)
+    {
+        GameObject goal = GameObject.FindGameObjectWithTag("Goal");
+
+        if (goal != null)
+        {
+            float distance = Vector3.Distance(goal.transform.position, position);
+
+            if (distance < MAP_SIZE)
+            {
+                Debug.Log($"→ Goal '{goal.name}' が移動先にいます (距離: {distance:F2})");
+                return true;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Goalタグを持つオブジェクトが見つかりません！");
         }
 
         return false;

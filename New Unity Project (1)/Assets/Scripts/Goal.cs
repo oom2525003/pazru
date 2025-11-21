@@ -18,8 +18,10 @@ public class Goal : MonoBehaviour
         {
             Debug.Log("ゴール");
 
+            SceneManager.LoadScene("ClearScene");
+
             // コルーチンで停止
-            StartCoroutine(Restart());
+            //StartCoroutine(Restart());
         }
     }
 
