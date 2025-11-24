@@ -167,13 +167,14 @@ public class MovingObject : MonoBehaviour
             return;
         }
 
+        // 4. 移動先にゴールがないかチェック
         if (IsGoalAtPosition(newPosition))
         {
-            Debug.Log($"{gameObject.name}はGoalがいるため移動できません");
+            Debug.Log($"{gameObject.name}はGoalがあるため移動できません");
             return;
         }
 
-        // 4. 移動先に他のMovingObjectがいないかチェック
+        // 5. 移動先に他のMovingObjectがいないかチェック
         if (IsOtherMovingObjectAtPosition(newPosition))
         {
             Debug.Log($"{gameObject.name}は他のMovingObjectがいるため移動できません");

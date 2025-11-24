@@ -63,6 +63,7 @@ public class PlayerController : MonoBehaviour
             TryMove(1, 0);
         }
 
+        // R キー - リセット
         if (Input.GetKeyDown(KeyCode.R))
         {
             SceneManager.LoadScene("GameScene");
