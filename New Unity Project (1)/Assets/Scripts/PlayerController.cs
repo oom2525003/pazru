@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
 
     // マップのサイズと開始位置
     private const float MAP_SIZE = 2.0f;
-    private const float START_X = -5.0f;
+    private const float START_X = -7.0f;
     private const float START_Y = 3.0f;
 
     // 現在のグリッド位置
