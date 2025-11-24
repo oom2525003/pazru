@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 public class PlayerController : MonoBehaviour
 {
     // グリッドの設定
-    private const int GRID_WIDTH = 6;
+    private const int GRID_WIDTH = 90;
     private const int GRID_HEIGHT = 4;
 
     // マップのサイズと開始位置
@@ -110,6 +110,8 @@ public class PlayerController : MonoBehaviour
         UpdatePlayerPosition();
 
         Debug.Log($"Playerが移動しました: グリッド({currentX}, {currentY})");
+
+
     }
 
     // プレイヤーの実際の位置を更新
