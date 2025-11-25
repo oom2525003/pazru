@@ -4,9 +4,9 @@ public class MovingObject : MonoBehaviour
 {
     // マップのサイズと範囲設定
     private const float MAP_SIZE = 2.0f;
-    private const float START_X = -5.0f;
+    private const float START_X = -7.0f;
     private const float START_Y = 4.0f;
-    private const float END_X = 5.0f;
+    private const float END_X = 50.0f;
     private const float END_Y = -4.0f;
 
     // 選択されているかどうか
