@@ -4,16 +4,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 public class StartScene : MonoBehaviour
 {
-
-
-
-
-
-
     public void switchScene()
     {
-        SceneManager.LoadScene("StartScene", LoadSceneMode.Single);
+        // Stage‚ÉˆÚ“®
+        SceneManager.LoadScene("Stage", LoadSceneMode.Single);
     }
-
-
 }
