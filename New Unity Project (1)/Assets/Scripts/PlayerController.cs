@@ -66,7 +66,7 @@ public class PlayerController : MonoBehaviour
         // R キー - リセット
         if (Input.GetKeyDown(KeyCode.R))
         {
-            SceneManager.LoadScene("Stage");
+            SceneManager.LoadScene("Stage",LoadSceneMode.Additive);
         }
     }
 

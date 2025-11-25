@@ -6,7 +6,7 @@ public class StartScene : MonoBehaviour
 {
     public void switchScene()
     {
-        // Stage‚ÉˆÚ“®
+        // ƒQ[ƒ€‰æ–Ê‚ÉˆÚ“®
         SceneManager.LoadScene("Stage", LoadSceneMode.Single);
     }
 }
