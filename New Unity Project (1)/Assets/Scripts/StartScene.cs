@@ -7,6 +7,6 @@ public class StartScene : MonoBehaviour
     public void switchScene()
     {
         // ƒQ[ƒ€‰æ–Ê‚ÉˆÚ“®
-        SceneManager.LoadScene("Stage", LoadSceneMode.Single);
+        SceneManager.LoadScene("StartScene", LoadSceneMode.Single);
     }
 }
